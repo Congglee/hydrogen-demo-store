@@ -1,13 +1,21 @@
 import {defer} from '@shopify/remix-oxygen';
 import {Suspense} from 'react';
 import {Await, useLoaderData} from '@remix-run/react';
-import {AnalyticsPageType} from '@shopify/hydrogen';
+import {AnalyticsPageType, Pagination} from '@shopify/hydrogen';
 
-import {ProductSwimlane, FeaturedCollections, Hero} from '~/components';
+import {
+  ProductSwimlane,
+  FeaturedCollections,
+  Hero,
+  PageHeader,
+  ProductCard,
+  Grid,
+} from '~/components';
 import {MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
 import {getHeroPlaceholder} from '~/lib/placeholders';
 import {seoPayload} from '~/lib/seo.server';
 import {routeHeaders} from '~/data/cache';
+import {getImageLoadingPriority} from '~/lib/const';
 
 export const headers = routeHeaders;
 
@@ -29,6 +37,16 @@ export async function loader({params, context}) {
   const {shop, hero} = await context.storefront.query(HOMEPAGE_SEO_QUERY, {
     variables: {handle: 'freestyle'},
   });
+
+  const {collection} = await context.storefront.query(
+    FREE_STYLE_COLLECTIONS_QUERY,
+    {
+      variables: {
+        country,
+        language,
+      },
+    },
+  );
 
   const seo = seoPayload.home();
 
@@ -74,6 +92,7 @@ export async function loader({params, context}) {
     analytics: {
       pageType: AnalyticsPageType.home,
     },
+    freeStyleCollections: collection,
     seo,
   });
 }
@@ -86,6 +105,7 @@ export default function Homepage() {
     tertiaryHero,
     featuredCollections,
     featuredProducts,
+    freeStyleCollections,
   } = useLoaderData();
 
   // TODO: skeletons vs placeholders
@@ -150,6 +170,39 @@ export default function Homepage() {
             }}
           </Await>
         </Suspense>
+      )}
+
+      <PageHeader heading="Free Style" variant="blogPost" />
+      {freeStyleCollections && (
+        <div className="w-full gap-x-4 md:gap-8 grid px-6 md:px-8 lg:px-12 border-none">
+          <Pagination connection={freeStyleCollections.products}>
+            {({nodes, isLoading, NextLink, PreviousLink}) => {
+              const itemsMarkup = nodes.map((product, i) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  loading={getImageLoadingPriority(i)}
+                />
+              ));
+
+              return (
+                <>
+                  <div className="flex items-center justify-center mt-6">
+                    <PreviousLink className="inline-block rounded font-medium text-center py-3 px-6 border border-primary/10 bg-contrast text-primary w-full">
+                      {isLoading ? 'Loading...' : 'Previous'}
+                    </PreviousLink>
+                  </div>
+                  <Grid data-test="product-grid">{itemsMarkup}</Grid>
+                  <div className="flex items-center justify-center mt-6">
+                    {/* <NextLink className="inline-block rounded font-medium text-center py-3 px-6 border border-primary/10 bg-contrast text-primary w-full">
+                      {isLoading ? 'Loading...' : 'Next'}
+                    </NextLink> */}
+                  </div>
+                </>
+              );
+            }}
+          </Pagination>
+        </div>
       )}
     </>
   );
@@ -238,6 +291,66 @@ export const FEATURED_COLLECTIONS_QUERY = `#graphql
           width
           height
           url
+        }
+      }
+    }
+  }
+`;
+
+export const FREE_STYLE_COLLECTIONS_QUERY = `#graphql
+  query freeStyleCollections($country: CountryCode, $language: LanguageCode)
+  @inContext(country: $country, language: $language) {
+    collection(handle: "freestyle") {
+      id
+      handle
+      image {
+        height
+        id
+        width
+        url
+      }
+      title
+      products(first: 4, reverse: true) {
+        nodes {
+          id
+          title
+          publishedAt
+          handle
+          vendor
+          variants(first: 1) {
+            nodes {
+              id
+              availableForSale
+              image {
+                url
+                altText
+                width
+                height
+              }
+              price {
+                amount
+                currencyCode
+              }
+              compareAtPrice {
+                amount
+                currencyCode
+              }
+              selectedOptions {
+                name
+                value
+              }
+              product {
+                handle
+                title
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasPreviousPage
+          hasNextPage
+          startCursor
+          endCursor
         }
       }
     }
