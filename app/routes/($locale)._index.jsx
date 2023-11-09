@@ -172,7 +172,7 @@ export default function Homepage() {
         </Suspense>
       )}
 
-      <PageHeader heading="Free Style" variant="blogPost" />
+      <PageHeader heading="Freestyle Collection" variant="blogPost" />
       {freeStyleCollections && (
         <div className="w-full gap-x-4 md:gap-8 grid px-6 md:px-8 lg:px-12 border-none">
           <Pagination connection={freeStyleCollections.products}>

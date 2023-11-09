@@ -1,6 +1,6 @@
 # Hydrogen template: Demo Store
 
-![Result Image](./public/result-image.png)
+![Result Image](./public/result-image-2.png)
 
 ## Getting started
 
