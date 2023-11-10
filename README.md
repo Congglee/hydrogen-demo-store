@@ -1,6 +1,11 @@
 # Hydrogen template: Demo Store
 
-![Result Image](./public/result-image-2.png)
+![Result Image](./public/result-image-3.png)
+
+Studying and researching:
+
+- parameters last, before, after
+- endCursor, startCursor
 
 ## Getting started
 

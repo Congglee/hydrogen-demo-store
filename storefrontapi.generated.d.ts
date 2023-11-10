@@ -456,6 +456,7 @@ export type HomepageFeaturedCollectionsQuery = {
 export type FreeStyleCollectionsQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductCollectionSortKeys>;
 }>;
 
 export type FreeStyleCollectionsQuery = {
@@ -1763,7 +1764,7 @@ interface GeneratedQueryTypes {
     return: HomepageFeaturedCollectionsQuery;
     variables: HomepageFeaturedCollectionsQueryVariables;
   };
-  '#graphql\n  query freeStyleCollections($country: CountryCode, $language: LanguageCode)\n  @inContext(country: $country, language: $language) {\n    collection(handle: "freestyle") {\n      id\n      handle\n      image {\n        height\n        id\n        width\n        url\n      }\n      title\n      products(first: 4, reverse: true) {\n        nodes {\n          id\n          title\n          publishedAt\n          handle\n          vendor\n          variants(first: 1) {\n            nodes {\n              id\n              availableForSale\n              image {\n                url\n                altText\n                width\n                height\n              }\n              price {\n                amount\n                currencyCode\n              }\n              compareAtPrice {\n                amount\n                currencyCode\n              }\n              selectedOptions {\n                name\n                value\n              }\n              product {\n                handle\n                title\n              }\n            }\n          }\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          startCursor\n          endCursor\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query freeStyleCollections($country: CountryCode, $language: LanguageCode, $sortKey: ProductCollectionSortKeys)\n  @inContext(country: $country, language: $language) {\n    collection(handle: "freestyle") {\n      id\n      handle\n      image {\n        height\n        id\n        width\n        url\n      }\n      title\n      products(first: 4, reverse: true, sortKey: $sortKey) {\n        nodes {\n          id\n          title\n          publishedAt\n          handle\n          vendor\n          variants(first: 1) {\n            nodes {\n              id\n              availableForSale\n              image {\n                url\n                altText\n                width\n                height\n              }\n              price {\n                amount\n                currencyCode\n              }\n              compareAtPrice {\n                amount\n                currencyCode\n              }\n              selectedOptions {\n                name\n                value\n              }\n              product {\n                handle\n                title\n              }\n            }\n          }\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          startCursor\n          endCursor\n        }\n      }\n    }\n  }\n': {
     return: FreeStyleCollectionsQuery;
     variables: FreeStyleCollectionsQueryVariables;
   };

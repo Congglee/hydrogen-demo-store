@@ -44,6 +44,7 @@ export async function loader({params, context}) {
       variables: {
         country,
         language,
+        sortKey: 'CREATED',
       },
     },
   );
@@ -187,7 +188,7 @@ export default function Homepage() {
 
               return (
                 <>
-                  <div className="flex items-center justify-center mt-6">
+                  <div className="flex items-center justify-center">
                     <PreviousLink className="inline-block rounded font-medium text-center py-3 px-6 border border-primary/10 bg-contrast text-primary w-full">
                       {isLoading ? 'Loading...' : 'Previous'}
                     </PreviousLink>
@@ -298,7 +299,7 @@ export const FEATURED_COLLECTIONS_QUERY = `#graphql
 `;
 
 export const FREE_STYLE_COLLECTIONS_QUERY = `#graphql
-  query freeStyleCollections($country: CountryCode, $language: LanguageCode)
+  query freeStyleCollections($country: CountryCode, $language: LanguageCode, $sortKey: ProductCollectionSortKeys)
   @inContext(country: $country, language: $language) {
     collection(handle: "freestyle") {
       id
@@ -310,7 +311,7 @@ export const FREE_STYLE_COLLECTIONS_QUERY = `#graphql
         url
       }
       title
-      products(first: 4, reverse: true) {
+      products(first: 4, reverse: true, sortKey: $sortKey) {
         nodes {
           id
           title
