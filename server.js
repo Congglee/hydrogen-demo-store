@@ -13,6 +13,9 @@ import {
 } from '@shopify/hydrogen';
 
 import {HydrogenSession} from '~/lib/session.server';
+
+import {createSanityClient} from 'hydrogen-sanity';
+
 import {getLocaleFromRequest} from '~/lib/utils';
 
 /**
@@ -53,6 +56,27 @@ export default {
         storefrontHeaders: getStorefrontHeaders(request),
       });
 
+      const sanity = createSanityClient({
+        cache,
+        waitUntil,
+        // Optionally, pass session and token to enable live-preview
+        preview:
+          env.SANITY_PREVIEW_SECRET && env.SANITY_API_TOKEN
+            ? {
+                session: previewSession,
+                token: env.SANITY_API_TOKEN,
+              }
+            : undefined,
+        // Pass configuration options for Sanity client
+        config: {
+          projectId: env.SANITY_PROJECT_ID,
+          dataset: env.SANITY_DATASET,
+          apiVersion: env.SANITY_API_VERSION ?? '2023-03-30',
+          useCdn: process.env.NODE_ENV === 'production',
+          perspective: 'published',
+        },
+      });
+
       const cart = createCartHandler({
         storefront,
         getCartId: cartGetIdDefault(request.headers),
@@ -72,6 +96,7 @@ export default {
           storefront,
           cart,
           env,
+          sanity,
         }),
       });
 

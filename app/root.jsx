@@ -24,6 +24,7 @@ import {NotFound} from './components/NotFound';
 import styles from './styles/app.css';
 import {DEFAULT_LOCALE, parseMenu} from './lib/utils';
 import {useAnalytics} from './hooks/useAnalytics';
+import {MAIN_LINKS_QUERY} from './queries/sanity/fragments/mainLinks';
 
 // This is important to avoid re-fetching root queries on sub-navigations
 /**
@@ -90,6 +91,8 @@ export async function loader({request, context}) {
       shopifySalesChannel: ShopifySalesChannel.hydrogen,
       shopId: layout.shop.id,
     },
+    sanityProjectID: context.env.SANITY_PROJECT_ID,
+    sanityDataset: context.env.SANITY_DATASET,
     seo,
   });
 }
@@ -240,7 +243,7 @@ const LAYOUT_QUERY = `#graphql
 /**
  * @param {AppLoadContext}
  */
-async function getLayoutData({storefront, env}) {
+async function getLayoutData({storefront, env, sanity}) {
   const data = await storefront.query(LAYOUT_QUERY, {
     variables: {
       headerMenuHandle: 'main-menu',
@@ -248,6 +251,8 @@ async function getLayoutData({storefront, env}) {
       language: storefront.i18n.language,
     },
   });
+
+  const headerMainMenu = await sanity.query({query: MAIN_LINKS_QUERY});
 
   invariant(data, 'No data returned from Shopify API');
 
@@ -279,7 +284,7 @@ async function getLayoutData({storefront, env}) {
       )
     : undefined;
 
-  return {shop: data.shop, headerMenu, footerMenu};
+  return {shop: data.shop, headerMenu, footerMenu, headerMainMenu};
 }
 
 /** @typedef {import('@shopify/remix-oxygen').LinksFunction} LinksFunction */

@@ -3,24 +3,25 @@ import isbot from 'isbot';
 import {renderToReadableStream} from 'react-dom/server';
 import {createContentSecurityPolicy} from '@shopify/hydrogen';
 
-/**
- * @param {Request} request
- * @param {number} responseStatusCode
- * @param {Headers} responseHeaders
- * @param {EntryContext} remixContext
- */
 export default async function handleRequest(
   request,
   responseStatusCode,
   responseHeaders,
   remixContext,
 ) {
-  const {nonce, header, NonceProvider} = createContentSecurityPolicy();
+  // Create the Content Security Policy
+  const {nonce, header, NonceProvider} = createContentSecurityPolicy({
+    styleSrc: ["'self'", 'https://cdn.shopify.com'],
+    imgSrc: ["'self'", 'https://cdn.shopify.com', 'https://cdn.sanity.io'],
+  });
+
   const body = await renderToReadableStream(
+    // Wrap the entire app in the nonce provider
     <NonceProvider>
       <RemixServer context={remixContext} url={request.url} />
     </NonceProvider>,
     {
+      // Pass the nonce to react
       nonce,
       signal: request.signal,
       onError(error) {
@@ -36,11 +37,11 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
+  // Add the CSP header
   responseHeaders.set('Content-Security-Policy', header);
+
   return new Response(body, {
     headers: responseHeaders,
     status: responseStatusCode,
   });
 }
-
-/** @typedef {import('@shopify/remix-oxygen').EntryContext} EntryContext */

@@ -3,6 +3,7 @@ import {useWindowScroll} from 'react-use';
 import {Disclosure} from '@headlessui/react';
 import {Suspense, useEffect, useMemo} from 'react';
 import {CartForm} from '@shopify/hydrogen';
+
 import {
   Drawer,
   useDrawer,
@@ -30,7 +31,7 @@ import {useRootLoaderData} from '~/root';
  * @param {LayoutProps}
  */
 export function Layout({children, layout}) {
-  const {headerMenu, footerMenu} = layout;
+  const {headerMenu, footerMenu, headerMainMenu} = layout;
   return (
     <>
       <div className="flex flex-col min-h-screen">
@@ -39,7 +40,9 @@ export function Layout({children, layout}) {
             Skip to content
           </a>
         </div>
-        {headerMenu && <Header title={layout.shop.name} menu={headerMenu} />}
+        {headerMenu && (
+          <Header title={layout.shop.name} menu={headerMainMenu} />
+        )}
         <main role="main" id="mainContent" className="flex-grow">
           {children}
         </main>
@@ -245,67 +248,119 @@ function MobileHeader({title, isHome, openCart, openMenu}) {
  *   title: string;
  * }}
  */
+
+// function DesktopHeader({isHome, menu, openCart, title}) {
+//   const params = useParams();
+//   const {y} = useWindowScroll();
+
+//   return (
+//     <header
+//       role="banner"
+//       className={`${
+//         isHome
+//           ? 'bg-primary/80 dark:bg-contrast/60 text-contrast dark:text-primary shadow-darkHeader'
+//           : 'bg-contrast/80 text-primary'
+//       } ${
+//         !isHome && y > 50 && ' shadow-lightHeader'
+//       } hidden h-nav lg:flex items-center sticky transition duration-300 backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-8 px-12 py-8`}
+//     >
+//       <div className="flex gap-12">
+//         <Link className="font-bold" to="/" prefetch="intent">
+//           {title}
+//         </Link>
+//         <nav className="flex gap-8">
+//           {/* Top level menu items */}
+//           {(menu?.items || []).map((item) => (
+//             <Link
+//               key={item.id}
+//               to={item.to}
+//               target={item.target}
+//               prefetch="intent"
+//               className={({isActive}) =>
+//                 isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
+//               }
+//             >
+//               {item.title}
+//             </Link>
+//           ))}
+//         </nav>
+//       </div>
+//       <div className="flex items-center gap-1">
+//         <Form
+//           method="get"
+//           action={params.locale ? `/${params.locale}/search` : '/search'}
+//           className="flex items-center gap-2"
+//         >
+//           <Input
+//             className={
+//               isHome
+//                 ? 'focus:border-contrast/20 dark:focus:border-primary/20'
+//                 : 'focus:border-primary/20'
+//             }
+//             type="search"
+//             variant="minisearch"
+//             placeholder="Search"
+//             name="q"
+//           />
+//           <button
+//             type="submit"
+//             className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
+//           >
+//             <IconSearch />
+//           </button>
+//         </Form>
+//         <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
+//         <CartCount isHome={isHome} openCart={openCart} />
+//       </div>
+//     </header>
+//   );
+// }
+
 function DesktopHeader({isHome, menu, openCart, title}) {
   const params = useParams();
   const {y} = useWindowScroll();
+
   return (
     <header
       role="banner"
       className={`${
-        isHome
-          ? 'bg-primary/80 dark:bg-contrast/60 text-contrast dark:text-primary shadow-darkHeader'
-          : 'bg-contrast/80 text-primary'
+        isHome ? 'bg-[#0f172a] text-white' : 'bg-contrast/80 text-primary'
       } ${
-        !isHome && y > 50 && ' shadow-lightHeader'
-      } hidden h-nav lg:flex items-center sticky transition duration-300 backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-8 px-12 py-8`}
+        !isHome && y > 50 && 'shadow-lightHeader'
+      } hidden h-10 lg:flex items-center sticky transition duration-300 backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-8 py-6 px-4`}
     >
       <div className="flex gap-12">
-        <Link className="font-bold" to="/" prefetch="intent">
-          {title}
-        </Link>
         <nav className="flex gap-8">
-          {/* Top level menu items */}
-          {(menu?.items || []).map((item) => (
+          {(menu || []).map((item) => (
             <Link
               key={item.id}
               to={item.to}
               target={item.target}
               prefetch="intent"
-              className={({isActive}) =>
-                isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
-              }
             >
-              {item.title}
+              {item.mainLinkTitle}
             </Link>
           ))}
         </nav>
       </div>
-      <div className="flex items-center gap-1">
-        <Form
-          method="get"
-          action={params.locale ? `/${params.locale}/search` : '/search'}
-          className="flex items-center gap-2"
+
+      <div className="flex items-center gap-3">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          className="w-6 h-6"
         >
-          <Input
-            className={
-              isHome
-                ? 'focus:border-contrast/20 dark:focus:border-primary/20'
-                : 'focus:border-primary/20'
-            }
-            type="search"
-            variant="minisearch"
-            placeholder="Search"
-            name="q"
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
           />
-          <button
-            type="submit"
-            className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
-          >
-            <IconSearch />
-          </button>
-        </Form>
-        <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
-        <CartCount isHome={isHome} openCart={openCart} />
+        </svg>
+
+        <span>Free shipping for all order over $99.00</span>
       </div>
     </header>
   );

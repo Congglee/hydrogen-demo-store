@@ -1,7 +1,9 @@
 import {defer} from '@shopify/remix-oxygen';
 import {Suspense} from 'react';
-import {Await, useLoaderData} from '@remix-run/react';
+import {Await, useLoaderData, useMatches} from '@remix-run/react';
 import {AnalyticsPageType, Pagination} from '@shopify/hydrogen';
+import groq from 'groq';
+import imageUrlBuilder from '@sanity/image-url';
 
 import {
   ProductSwimlane,
@@ -16,8 +18,14 @@ import {getHeroPlaceholder} from '~/lib/placeholders';
 import {seoPayload} from '~/lib/seo.server';
 import {routeHeaders} from '~/data/cache';
 import {getImageLoadingPriority} from '~/lib/const';
+import {Image} from '@shopify/hydrogen';
 
 export const headers = routeHeaders;
+
+const ACCESSORIES_MENU_QUERY = groq`
+  *[_type == "menu" && _id == "9801cd03-2f02-4f0a-b873-c5740c528188"] {
+      linkSection
+  }[0].linkSection`;
 
 /**
  * @param {LoaderFunctionArgs}
@@ -48,6 +56,10 @@ export async function loader({params, context}) {
       },
     },
   );
+
+  const accessories = await context.sanity.query({
+    query: ACCESSORIES_MENU_QUERY,
+  });
 
   const seo = seoPayload.home();
 
@@ -94,6 +106,7 @@ export async function loader({params, context}) {
       pageType: AnalyticsPageType.home,
     },
     freeStyleCollections: collection,
+    accessories,
     seo,
   });
 }
@@ -107,13 +120,56 @@ export default function Homepage() {
     featuredCollections,
     featuredProducts,
     freeStyleCollections,
+    accessories,
   } = useLoaderData();
+  const [root] = useMatches();
+
+  const {sanityDataset, sanityProjectID} = root.data;
+
+  const builder = imageUrlBuilder({
+    projectId: sanityProjectID,
+    dataset: sanityDataset,
+  });
 
   // TODO: skeletons vs placeholders
   const skeletons = getHeroPlaceholder([{}, {}, {}]);
 
   return (
     <>
+      <div className="grid grid-cols-1 md:grid-cols-4 sm:grid-cols-2 lg:grid-cols-6 gap-x-4 md:gap-8 px-6 md:px-8 lg:px-12 border-none bg-white py-[31px]">
+        {accessories &&
+          accessories.map((accessory) => (
+            <div
+              className="w-full aspect-[4/5] cursor-pointer"
+              key={accessory._key}
+            >
+              <Image
+                data={{
+                  url: builder.image(accessory.menuBanner.asset._ref).url(),
+                  altText: null,
+                }}
+                sizes="(min-width: 45em) 50vw, 100vw"
+                aspectRatio="4/5"
+                className="object-cover w-full fadeIn mb-4"
+              />
+
+              <ul className="text-[#001033]">
+                <li className="mb-2">
+                  <span className="font-bold">
+                    {accessory.mainLink[0].title}
+                  </span>
+                </li>
+
+                {accessory.subLink.map((link) => (
+                  <li className="mb-1 font-semibold" key={link._key}>
+                    {link.title}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+      </div>
+
       {primaryHero && (
         <Hero {...primaryHero} height="full" top loading="eager" />
       )}
@@ -194,11 +250,6 @@ export default function Homepage() {
                     </PreviousLink>
                   </div>
                   <Grid data-test="product-grid">{itemsMarkup}</Grid>
-                  <div className="flex items-center justify-center mt-6">
-                    {/* <NextLink className="inline-block rounded font-medium text-center py-3 px-6 border border-primary/10 bg-contrast text-primary w-full">
-                      {isLoading ? 'Loading...' : 'Next'}
-                    </NextLink> */}
-                  </div>
                 </>
               );
             }}
