@@ -2,7 +2,9 @@
 
 ## Demo Result
 
-![Result Image](./public/result-image-4.png)
+![Result Image](./public/Screenshot%202023-11-17%20174541.jpg)
+
+Video go to `public/scrnli_17-40-44 17_11_2023.webm`
 
 ## Getting started
 

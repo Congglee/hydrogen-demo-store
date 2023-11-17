@@ -1,5 +1,5 @@
 import {useParams, Form, Await, useMatches} from '@remix-run/react';
-import {useWindowScroll} from 'react-use';
+import {createGlobalState, useWindowScroll} from 'react-use';
 import {Disclosure} from '@headlessui/react';
 import {Suspense, useEffect, useMemo, useRef, useState} from 'react';
 import {CartForm, Image} from '@shopify/hydrogen';
@@ -333,6 +333,7 @@ function DesktopTopHeader({isHome, menu, openCart, title, accessories}) {
   // const params = useParams();
   const {y} = useWindowScroll();
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [isAccessories, setIsAccessories] = useState('');
 
   return (
     <header
@@ -351,9 +352,11 @@ function DesktopTopHeader({isHome, menu, openCart, title, accessories}) {
               key={index}
               onMouseEnter={() => {
                 setIsDropdownVisible(true);
+                setIsAccessories(item.mainLinkTitle);
               }}
               onMouseLeave={() => {
                 setIsDropdownVisible(false);
+                console.log(isAccessories);
               }}
             >
               <Link to={item.to} target={item.target} prefetch="intent">
@@ -362,10 +365,12 @@ function DesktopTopHeader({isHome, menu, openCart, title, accessories}) {
                   <span className="hidden lg:block">{item.mainLinkTitle}</span>
                 </span>
               </Link>
+
               <HeaderTopDropdownMenu
                 accessories={accessories}
                 menu={menu}
                 isHoverMenu={isDropdownVisible}
+                isAccessories={isAccessories}
               />
             </div>
           ))}
@@ -393,7 +398,7 @@ function DesktopTopHeader({isHome, menu, openCart, title, accessories}) {
   );
 }
 
-function HeaderTopDropdownMenu({accessories, isHoverMenu}) {
+function HeaderTopDropdownMenu({accessories, isHoverMenu, isAccessories}) {
   const [root] = useMatches();
 
   const {sanityDataset, sanityProjectID} = root.data;
