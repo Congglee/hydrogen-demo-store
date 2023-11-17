@@ -15,6 +15,7 @@ import {ShopifySalesChannel, Seo, useNonce} from '@shopify/hydrogen';
 import invariant from 'tiny-invariant';
 
 import {Layout} from '~/components';
+
 import {seoPayload} from '~/lib/seo.server';
 
 import favicon from '../public/favicon.svg';
@@ -25,6 +26,7 @@ import styles from './styles/app.css';
 import {DEFAULT_LOCALE, parseMenu} from './lib/utils';
 import {useAnalytics} from './hooks/useAnalytics';
 import {MAIN_LINKS_QUERY} from './queries/sanity/fragments/mainLinks';
+import groq from 'groq';
 
 // This is important to avoid re-fetching root queries on sub-navigations
 /**
@@ -240,6 +242,11 @@ const LAYOUT_QUERY = `#graphql
   }
 `;
 
+const ACCESSORIES_MENU_QUERY = groq`
+  *[_type == "menu" && _id == "9801cd03-2f02-4f0a-b873-c5740c528188"] {
+      linkSection
+  }[0].linkSection`;
+
 /**
  * @param {AppLoadContext}
  */
@@ -253,6 +260,9 @@ async function getLayoutData({storefront, env, sanity}) {
   });
 
   const headerMainMenu = await sanity.query({query: MAIN_LINKS_QUERY});
+  const accessories = await sanity.query({
+    query: ACCESSORIES_MENU_QUERY,
+  });
 
   invariant(data, 'No data returned from Shopify API');
 
@@ -284,7 +294,7 @@ async function getLayoutData({storefront, env, sanity}) {
       )
     : undefined;
 
-  return {shop: data.shop, headerMenu, footerMenu, headerMainMenu};
+  return {shop: data.shop, headerMenu, footerMenu, headerMainMenu, accessories};
 }
 
 /** @typedef {import('@shopify/remix-oxygen').LinksFunction} LinksFunction */

@@ -58,6 +58,22 @@ export default {
         darkHeader: 'inset 0px -1px 0px 0px rgba(21, 21, 21, 0.4)',
         lightHeader: 'inset 0px -1px 0px 0px rgba(21, 21, 21, 0.05)',
       },
+      keyframes: {
+        'slide-in-top': {
+          '0%': {
+            '-webkit-transform': 'translateY(0);',
+            transform: 'translateY(-20%);',
+          },
+          '100%': {
+            '-webkit-transform': 'translateY(20%);',
+            transform: 'translateY(20%);',
+          },
+        },
+      },
+      animation: {
+        'slide-in-top':
+          'slide-in-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;',
+      },
     },
   },
   plugins: [formsPlugin, typographyPlugin],

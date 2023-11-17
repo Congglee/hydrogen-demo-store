@@ -11,7 +11,7 @@ export default async function handleRequest(
 ) {
   // Create the Content Security Policy
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
-    styleSrc: ["'self'", 'https://cdn.shopify.com'],
+    // styleSrc: ["'self'", 'https://cdn.shopify.com'],
     imgSrc: ["'self'", 'https://cdn.shopify.com', 'https://cdn.sanity.io'],
   });
 

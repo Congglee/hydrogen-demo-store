@@ -180,3 +180,7 @@ shop-pay-button {
     }
   }
 }
+
+.menu-item .hover-effect span {
+  @apply translate-y-0 transition-all duration-[400];
+}
