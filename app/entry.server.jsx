@@ -12,7 +12,24 @@ export default async function handleRequest(
   // Create the Content Security Policy
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
     // styleSrc: ["'self'", 'https://cdn.shopify.com'],
-    imgSrc: ["'self'", 'https://cdn.shopify.com', 'https://cdn.sanity.io'],
+    imgSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://cdn.sanity.io',
+      'https://www.youtube.com',
+    ],
+    scriptSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://cdn.sanity.io',
+      'https://www.youtube.com',
+    ],
+    frameSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'https://cdn.sanity.io',
+      'https://www.youtube.com',
+    ],
   });
 
   const body = await renderToReadableStream(

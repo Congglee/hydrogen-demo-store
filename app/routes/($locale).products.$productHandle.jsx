@@ -151,7 +151,8 @@ export default function Product() {
             />
           </section>
 
-          {/* <ProductGallery
+          {/*
+          <ProductGallery
             media={media.nodes}
             className="w-full lg:col-span-2"
           /> */}
