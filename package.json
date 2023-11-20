@@ -28,6 +28,8 @@
     "@shopify/remix-oxygen": "^2.0.1",
     "clsx": "^1.2.1",
     "cross-env": "^7.0.3",
+    "embla-carousel-autoplay": "^8.0.0-rc14",
+    "embla-carousel-react": "^8.0.0-rc14",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "groq": "^3.19.3",

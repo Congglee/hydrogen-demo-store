@@ -24,6 +24,7 @@ import {
   Link,
   AddToCartButton,
   Button,
+  EmblaProductGallery,
 } from '~/components';
 import {getExcerpt} from '~/lib/utils';
 import {seoPayload} from '~/lib/seo.server';
@@ -134,14 +135,27 @@ export default function Product() {
   const {media, title, vendor, descriptionHtml} = product;
   const {shippingPolicy, refundPolicy} = shop;
 
+  const OPTIONS = {};
+  const SLIDE_COUNT = media.nodes.length;
+  const SLIDES = Array.from(Array(SLIDE_COUNT).keys());
+
   return (
     <>
       <Section className="px-0 md:px-8 lg:px-12">
         <div className="grid items-start md:gap-6 lg:gap-20 md:grid-cols-2 lg:grid-cols-3">
-          <ProductGallery
+          <section className="sandbox__carousel swimlane md:grid-flow-row hiddenScroll md:p-0 md:overflow-x-auto md:grid-cols-2 w-full lg:col-span-2">
+            <EmblaProductGallery
+              slides={SLIDES}
+              options={OPTIONS}
+              media={media.nodes}
+            />
+          </section>
+
+          {/* <ProductGallery
             media={media.nodes}
             className="w-full lg:col-span-2"
-          />
+          /> */}
+
           <div className="sticky md:-mb-nav md:top-nav md:-translate-y-nav md:h-screen md:pt-nav hiddenScroll md:overflow-y-scroll">
             <section className="flex flex-col w-full max-w-xl gap-8 p-6 md:mx-auto md:max-w-sm md:px-0">
               <div className="grid gap-2">
