@@ -17,6 +17,7 @@ export default async function handleRequest(
       'https://cdn.shopify.com',
       'https://cdn.sanity.io',
       'https://www.youtube.com',
+      'https://theme.truestorefront.com',
     ],
     scriptSrc: [
       "'self'",

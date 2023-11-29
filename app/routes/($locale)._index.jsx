@@ -1,7 +1,7 @@
 import {defer} from '@shopify/remix-oxygen';
 import {Suspense} from 'react';
-import {Await, useLoaderData, useMatches} from '@remix-run/react';
-import {AnalyticsPageType, Pagination} from '@shopify/hydrogen';
+import {Await, Link, useLoaderData, useMatches} from '@remix-run/react';
+import {AnalyticsPageType, Pagination, Image} from '@shopify/hydrogen';
 import groq from 'groq';
 
 import {
@@ -11,12 +11,18 @@ import {
   PageHeader,
   ProductCard,
   Grid,
+  ProductHotspotCard,
 } from '~/components';
 import {MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
 import {getHeroPlaceholder} from '~/lib/placeholders';
 import {seoPayload} from '~/lib/seo.server';
 import {routeHeaders} from '~/data/cache';
 import {getImageLoadingPriority} from '~/lib/const';
+import {
+  getHomeImageHotspot,
+  getHomeProductsHotspot,
+} from '../queries/strapi/homeContent';
+import {API_URL} from '~/lib/strapi';
 
 export const headers = routeHeaders;
 
@@ -49,6 +55,15 @@ export async function loader({params, context}) {
       },
     },
   );
+
+  const strapiImageHotspot = await getHomeImageHotspot('273');
+
+  const productHandles = [
+    'mens-adidas-originals-nmd-r1-tr-running-shoes',
+    'adidas-aeroready-essentials-linear-logo-shorts',
+    'apple-watch-series-6-gps-44mm-white-aluminium',
+  ];
+  const strapiProductsHotspot = await getHomeProductsHotspot(productHandles);
 
   const seo = seoPayload.home();
 
@@ -95,6 +110,8 @@ export async function loader({params, context}) {
       pageType: AnalyticsPageType.home,
     },
     freeStyleCollections: collection,
+    homeImageHotspot: strapiImageHotspot.data,
+    homeProductsHotspot: strapiProductsHotspot.data,
     seo,
   });
 }
@@ -109,7 +126,12 @@ export default function Homepage() {
     featuredProducts,
     freeStyleCollections,
     accessories,
+    homeImageHotspot,
+    homeProductsHotspot,
   } = useLoaderData();
+
+  const imageHotspotData = homeImageHotspot.uploadFile.data;
+  const productsHotspotData = homeProductsHotspot.products.data;
 
   // TODO: skeletons vs placeholders
   const skeletons = getHeroPlaceholder([{}, {}, {}]);
@@ -119,6 +141,64 @@ export default function Homepage() {
       {primaryHero && (
         <Hero {...primaryHero} height="full" top loading="eager" />
       )}
+
+      <section className="min-h-[140px] lg:min-h-[400px]">
+        <div className="inline-block w-full">
+          <div className="mx-auto px-12 mb-12 md:mb-20">
+            <div className="relative">
+              <Image
+                data={{
+                  url: `${API_URL}${imageHotspotData.attributes.url}`,
+                  altText: null,
+                }}
+                sizes="(max-width: 32em) 100vw, 33vw"
+                aspectRatio={`${imageHotspotData.attributes.width}/${imageHotspotData.attributes.height}`}
+                className="object-cover w-full mb-5"
+              />
+
+              {productsHotspotData &&
+                productsHotspotData.map((product) => {
+                  const topPosition =
+                    product.id === '36'
+                      ? 'top-[65%]'
+                      : product.id === '31'
+                      ? 'top-[30%]'
+                      : product.id === '32'
+                      ? 'top-[34%]'
+                      : '';
+                  const leftPosition =
+                    product.id === '36'
+                      ? 'left-[34%]'
+                      : product.id === '31'
+                      ? 'left-[40%]'
+                      : product.id === '32'
+                      ? 'left-[57%]'
+                      : '';
+                  const productImages = JSON.parse(product.attributes.images);
+                  const productVariants = JSON.parse(
+                    product.attributes.variants,
+                  );
+                  return (
+                    <div
+                      className={`absolute group ${topPosition} ${leftPosition}`}
+                      key={product.id}
+                    >
+                      <div className="w-7 h-7 bg-white rounded-full flex items-center justify-center cursor-pointer text-black">
+                        +
+                      </div>
+
+                      <ProductHotspotCard
+                        product={product}
+                        productImages={productImages}
+                        productVariants={productVariants}
+                      />
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {featuredProducts && (
         <Suspense>
@@ -175,7 +255,7 @@ export default function Homepage() {
         </Suspense>
       )}
 
-      <PageHeader heading="Freestyle Collection" variant="blogPost" />
+      {/* <PageHeader heading="Freestyle Collection" variant="blogPost" />
       {freeStyleCollections && (
         <div className="w-full gap-x-4 md:gap-8 grid px-6 md:px-8 lg:px-12 border-none">
           <Pagination connection={freeStyleCollections.products}>
@@ -201,7 +281,7 @@ export default function Homepage() {
             }}
           </Pagination>
         </div>
-      )}
+      )} */}
     </>
   );
 }
