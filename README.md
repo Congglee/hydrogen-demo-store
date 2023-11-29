@@ -2,9 +2,8 @@
 
 ## Demo Result
 
-![Result Image](./public/result-image-6.png)
-
-Demo result video go to 👉 `public/demo-result-3.webm`
+![Result Image 01](./public/result-images/result-image-7_1.png)
+![Result Image 01](./public/result-images/result-image-7_2.png)
 
 ## Getting started
 
