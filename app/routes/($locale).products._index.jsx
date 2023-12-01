@@ -117,5 +117,7 @@ const ALL_PRODUCTS_QUERY = `#graphql
   ${PRODUCT_CARD_FRAGMENT}
 `;
 
+// query: "(title:Women's New Balance 574 Casual Shoes) OR (title:Nike Sportswear Club Fleece Cargo Jogger Pants)"
+
 /** @typedef {import('@shopify/remix-oxygen').LoaderFunctionArgs} LoaderFunctionArgs */
 /** @typedef {import('@shopify/remix-oxygen').SerializeFrom<typeof loader>} LoaderReturnData */

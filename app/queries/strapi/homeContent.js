@@ -1,64 +1,54 @@
 import StrapiClient from '~/lib/strapi';
 
-export async function getHomeImageHotspot(imageFileId) {
-  const data = await StrapiClient(
-    `#graphql
-      query getImage($imageFileId: ID!) {
-        uploadFile(id: $imageFileId) {
-          data {
-            id
-            attributes {
-              width
-              height
-              previewUrl
-              name
-              url
-            }
-          }
-        }
-      }
-    `,
-    {
-      imageFileId: imageFileId,
-    }
-  );
-
-  return data;
-}
-
-export async function getHomeProductsHotspot(productHandles) {
-  const filterConditions = productHandles.map(handle => ({ handle: { eq: handle } }));
-
-  const data = StrapiClient(`
+export async function getHomeProductsHotspot() {
+  const query = `
     #graphql
-      query GetProductsByHandles($productHandles: [ProductFiltersInput]) {
-        products(filters: { or: $productHandles } pagination: {} sort: [] publicationState: LIVE) {
-          data {
-            id
-            attributes {
-              shopifyID
-              title
-              handle
-              images
-              options
-              variants
-              vendor
-            }
-          }
-          meta {
-            pagination {
-              page
-              pageCount
-              pageSize
-              total
+     query {
+      home(publicationState: LIVE) {
+        data {
+          id
+          attributes {
+            modules {
+              ... on ComponentModulesImagehotspot {
+                 image {
+                    data {
+                      id
+                      attributes {
+                        width
+                        height
+                        previewUrl
+                        name
+                        url
+                      }
+                    }
+                  }
+                hotspotOption {
+                  id
+                  position_top
+                  position_left
+                  product {
+                    data {
+                      id
+                      attributes {
+                        handle
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
-
       }
-    `, {
-    productHandles: filterConditions,
-  });
+    }
+  `;
 
-  return data;
+  const variables = {};
+  try {
+    const data = await StrapiClient(query, variables);
+    return data;
+  } catch (error) {
+    // Handle error appropriately, e.g., log it or throw a specific error
+    throw new Error(`Failed to fetch data from Strapi: ${error.message}`);
+  }
 }

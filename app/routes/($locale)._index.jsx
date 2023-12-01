@@ -1,7 +1,12 @@
 import {defer} from '@shopify/remix-oxygen';
 import {Suspense} from 'react';
 import {Await, Link, useLoaderData, useMatches} from '@remix-run/react';
-import {AnalyticsPageType, Pagination, Image} from '@shopify/hydrogen';
+import {
+  AnalyticsPageType,
+  Pagination,
+  Image,
+  getPaginationVariables,
+} from '@shopify/hydrogen';
 import groq from 'groq';
 
 import {
@@ -29,8 +34,10 @@ export const headers = routeHeaders;
 /**
  * @param {LoaderFunctionArgs}
  */
-export async function loader({params, context}) {
+export async function loader({params, request, context}) {
   const {language, country} = context.storefront.i18n;
+  const variables = getPaginationVariables(request, {pageBy: 8});
+  const {session} = context;
 
   if (
     params.locale &&
@@ -56,14 +63,31 @@ export async function loader({params, context}) {
     },
   );
 
-  const strapiImageHotspot = await getHomeImageHotspot('273');
+  const strapiHomeHotspot = await getHomeProductsHotspot();
+  let queryString = '';
+  if (strapiHomeHotspot) {
+    const productHandles = strapiHomeHotspot.data.home.data.attributes.modules
+      .filter((module) => module.hotspotOption)
+      .flatMap((module) =>
+        module.hotspotOption.map(
+          (option) => option.product.data.attributes.handle,
+        ),
+      );
 
-  const productHandles = [
-    'mens-adidas-originals-nmd-r1-tr-running-shoes',
-    'adidas-aeroready-essentials-linear-logo-shorts',
-    'apple-watch-series-6-gps-44mm-white-aluminium',
-  ];
-  const strapiProductsHotspot = await getHomeProductsHotspot(productHandles);
+    queryString = productHandles
+      .map((handle) => `(handle:${handle})`)
+      .join(' OR ');
+    session.set('productHandles', queryString);
+  }
+
+  const {search} = await context.storefront.query(HOTSPOT_PRODUCTS_QUERY, {
+    variables: {
+      query: session.get('productHandles'),
+      ...variables,
+      country,
+      language,
+    },
+  });
 
   const seo = seoPayload.home();
 
@@ -110,8 +134,8 @@ export async function loader({params, context}) {
       pageType: AnalyticsPageType.home,
     },
     freeStyleCollections: collection,
-    homeImageHotspot: strapiImageHotspot.data,
-    homeProductsHotspot: strapiProductsHotspot.data,
+    strapiHomeHotspot: strapiHomeHotspot.data,
+    hotspotProducts: search.edges,
     seo,
   });
 }
@@ -126,12 +150,17 @@ export default function Homepage() {
     featuredProducts,
     freeStyleCollections,
     accessories,
-    homeImageHotspot,
-    homeProductsHotspot,
+    strapiHomeHotspot,
+    hotspotProducts,
   } = useLoaderData();
 
-  const imageHotspotData = homeImageHotspot.uploadFile.data;
-  const productsHotspotData = homeProductsHotspot.products.data;
+  const homeHotspotData = strapiHomeHotspot.home.data;
+  const imageHotspot = homeHotspotData.attributes.modules.find(
+    (module) => module.image,
+  );
+  const hotspotOptions = homeHotspotData.attributes.modules.find(
+    (module) => module.hotspotOption,
+  );
 
   // TODO: skeletons vs placeholders
   const skeletons = getHeroPlaceholder([{}, {}, {}]);
@@ -146,52 +175,37 @@ export default function Homepage() {
         <div className="inline-block w-full">
           <div className="mx-auto px-12 mb-12 md:mb-20">
             <div className="relative">
-              <Image
-                data={{
-                  url: `${API_URL}${imageHotspotData.attributes.url}`,
-                  altText: null,
-                }}
-                sizes="(max-width: 32em) 100vw, 33vw"
-                aspectRatio={`${imageHotspotData.attributes.width}/${imageHotspotData.attributes.height}`}
-                className="object-cover w-full mb-5"
-              />
+              {imageHotspot && (
+                <Image
+                  data={{
+                    url: `${API_URL}${imageHotspot.image.data.attributes.url}`,
+                    altText: null,
+                  }}
+                  sizes="(max-width: 32em) 100vw, 33vw"
+                  aspectRatio={`${imageHotspot.image.data.attributes.width}/${imageHotspot.image.data.attributes.height}`}
+                  className="object-cover w-full mb-5"
+                />
+              )}
 
-              {productsHotspotData &&
-                productsHotspotData.map((product) => {
-                  const topPosition =
-                    product.id === '36'
-                      ? 'top-[65%]'
-                      : product.id === '31'
-                      ? 'top-[30%]'
-                      : product.id === '32'
-                      ? 'top-[34%]'
-                      : '';
-                  const leftPosition =
-                    product.id === '36'
-                      ? 'left-[34%]'
-                      : product.id === '31'
-                      ? 'left-[40%]'
-                      : product.id === '32'
-                      ? 'left-[57%]'
-                      : '';
-                  const productImages = JSON.parse(product.attributes.images);
-                  const productVariants = JSON.parse(
-                    product.attributes.variants,
+              {hotspotOptions &&
+                hotspotOptions.hotspotOption?.map((option, index) => {
+                  const hotspotProduct = hotspotProducts.find(
+                    (product) =>
+                      product.node.handle ===
+                      option.product.data.attributes.handle,
                   );
                   return (
                     <div
-                      className={`absolute group ${topPosition} ${leftPosition}`}
-                      key={product.id}
+                      className={`absolute group left-[${option.position_left}%] top-[${option.position_top}%]`}
+                      key={option.id}
                     >
                       <div className="w-7 h-7 bg-white rounded-full flex items-center justify-center cursor-pointer text-black">
                         +
                       </div>
 
-                      <ProductHotspotCard
-                        product={product}
-                        productImages={productImages}
-                        productVariants={productVariants}
-                      />
+                      {hotspotProduct && (
+                        <ProductHotspotCard product={hotspotProduct} />
+                      )}
                     </div>
                   );
                 })}
@@ -433,6 +447,35 @@ export const FREE_STYLE_COLLECTIONS_QUERY = `#graphql
       }
     }
   }
+`;
+
+const HOTSPOT_PRODUCTS_QUERY = `#graphql
+  query HotSpotProducts(
+    $country: CountryCode
+    $language: LanguageCode
+    $first: Int
+    $last: Int
+    $startCursor: String
+    $endCursor: String
+    $query: String!
+  ) @inContext(country: $country, language: $language) {
+    search(first: $first, last: $last, before: $startCursor, after: $endCursor, query: $query) {
+      edges {
+        node {
+          ... on Product {
+            ...ProductCard
+          }
+        }
+      }
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        startCursor
+        endCursor
+      }
+    }
+  }
+  ${PRODUCT_CARD_FRAGMENT}
 `;
 
 /** @typedef {import('@shopify/remix-oxygen').LoaderFunctionArgs} LoaderFunctionArgs */

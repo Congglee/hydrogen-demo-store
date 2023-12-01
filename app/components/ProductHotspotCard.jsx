@@ -1,16 +1,16 @@
 import {Link} from '@remix-run/react';
 import {Image} from '@shopify/hydrogen';
 
-export function ProductHotspotCard({product, productImages, productVariants}) {
+export function ProductHotspotCard({product}) {
   return (
     <div className="absolute z-20 w-72 bg-white rounded p-4 border top-full mt-2 -translate-x-1/2 left-1/2 transition-all duration-300 ease-linear invisible opacity-0 group-hover:visible group-hover:opacity-100">
       <div className="flex flex-col gap-3 relative overflow-hidden">
-        <Link to={`/products/${product.attributes.handle}`}>
+        <Link to={`/products/${product.node.handle}}`}>
           <div className="aspect-square bg-primary/5">
             <div className="relative overflow-hidden w-full h-full">
               <Image
                 data={{
-                  url: `${productImages[0].src}`,
+                  url: `${product.node.variants.nodes[0].image.url}`,
                   altText: null,
                 }}
                 sizes="(min-width: 64em) 25vw, (min-width: 48em) 30vw, 45vw"
@@ -18,7 +18,7 @@ export function ProductHotspotCard({product, productImages, productVariants}) {
                 className="w-full aspect-square object-cover"
               />
             </div>
-            {productVariants[0].compare_at_price && (
+            {product.node.variants.nodes[0].compareAtPrice && (
               <div className="absolute z-10 px-2 top-0 right-0 m-4 bg-red-600 text-white text-sm">
                 Sale
               </div>
@@ -27,7 +27,7 @@ export function ProductHotspotCard({product, productImages, productVariants}) {
         </Link>
         <div className="flex flex-col flex-1 gap-1">
           <div className="flex items-center justify-between h-6 mt-1 mb-1 text-black">
-            <span>{product.attributes.vendor}</span>
+            <span>{product.node.vendor}</span>
             <div className="flex items-center gap-x-3">
               <div className="cursor-pointer select-none">
                 <svg
@@ -64,7 +64,7 @@ export function ProductHotspotCard({product, productImages, productVariants}) {
             </div>
           </div>
 
-          <div className="flex items-center gap-x-1">
+          {/* <div className="flex items-center gap-x-1">
             <div className="flex items-center gap-x-0.5">
               {Array.from({length: 5}, (_, index) => (
                 <div key={index}>
@@ -75,7 +75,10 @@ export function ProductHotspotCard({product, productImages, productVariants}) {
                     strokeWidth={1.5}
                     stroke="currentColor"
                     className={`w-4 h-4 ${
-                      product.id === '36' ? 'text-gray-500' : 'text-orange-400'
+                      product.node.handle ===
+                      'adidas-aeroready-essentials-linear-logo-shorts'
+                        ? 'text-gray-500'
+                        : 'text-orange-400'
                     }`}
                   >
                     <path
@@ -88,31 +91,36 @@ export function ProductHotspotCard({product, productImages, productVariants}) {
               ))}
             </div>
             <span className="text-sm text-black">
-              ({product.id === '36' ? '0' : '1'})
+              (
+              {product.node.handle ===
+              'adidas-aeroready-essentials-linear-logo-shorts'
+                ? '0'
+                : '1'}
+              )
             </span>
-          </div>
+          </div> */}
 
-          <Link to={`/products/${product.attributes.handle}`}>
+          <Link to={`/products/${product.node.handle}`}>
             <span className="text-black inline-block font-medium">
-              {product.attributes.title}
+              {product.node.title}
             </span>
           </Link>
 
           <div className="flex gap-x-2">
-            {productVariants[0].compare_at_price ? (
+            {product.node.variants.nodes[0].compareAtPrice ? (
               <>
                 <span className="line-through font-medium text-gray-500">
-                  {'$'}
-                  {productVariants[0].compare_at_price}
+                  {`$${product.node.variants.nodes[0].compareAtPrice.amount}`}
                 </span>
 
                 <span className="text-red-600 font-bold">
-                  {'$'}
-                  {productVariants[0].price}
+                  {`$${product.node.variants.nodes[0].price.amount}`}
                 </span>
               </>
             ) : (
-              <span className="text-black font-bold">$119.00</span>
+              <span className="text-black font-bold">
+                {`$${product.node.variants.nodes[0].price.amount}`}
+              </span>
             )}
           </div>
         </div>
