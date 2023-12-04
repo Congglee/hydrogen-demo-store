@@ -2,6 +2,11 @@ import {RemixServer} from '@remix-run/react';
 import isbot from 'isbot';
 import {renderToReadableStream} from 'react-dom/server';
 import {createContentSecurityPolicy} from '@shopify/hydrogen';
+import {createInstance} from 'i18next';
+import i18next from './i18next.server';
+import {I18nextProvider, initReactI18next} from 'react-i18next';
+import Backend from 'i18next-http-backend';
+import i18n from './i18n';
 
 export default async function handleRequest(
   request,
@@ -9,6 +14,20 @@ export default async function handleRequest(
   responseHeaders,
   remixContext,
 ) {
+  let instance = createInstance();
+  let lng = await i18next.getLocale(request);
+  let ns = i18next.getRouteNamespaces(remixContext);
+
+  await instance
+    .use(initReactI18next) // Tell our instance to use react-i18next
+    .use(Backend) // Setup our backend
+    .init({
+      ...i18n, // spread the configuration
+      lng, // The locale we detected above
+      ns, // The namespaces the routes about to render wants to use
+      backend: {loadPath: './public/locales/{{lng}}/{{ns}}.json'},
+    });
+
   // Create the Content Security Policy
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
     // styleSrc: ["'self'", 'https://cdn.shopify.com'],
@@ -35,9 +54,11 @@ export default async function handleRequest(
 
   const body = await renderToReadableStream(
     // Wrap the entire app in the nonce provider
-    <NonceProvider>
-      <RemixServer context={remixContext} url={request.url} />
-    </NonceProvider>,
+    <I18nextProvider i18n={instance}>
+      <NonceProvider>
+        <RemixServer context={remixContext} url={request.url} />
+      </NonceProvider>
+    </I18nextProvider>,
     {
       // Pass the nonce to react
       nonce,

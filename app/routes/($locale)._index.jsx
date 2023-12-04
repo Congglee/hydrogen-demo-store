@@ -1,12 +1,7 @@
 import {defer} from '@shopify/remix-oxygen';
 import {Suspense} from 'react';
 import {Await, Link, useLoaderData, useMatches} from '@remix-run/react';
-import {
-  AnalyticsPageType,
-  Pagination,
-  Image,
-  getPaginationVariables,
-} from '@shopify/hydrogen';
+import {AnalyticsPageType, Pagination, Image} from '@shopify/hydrogen';
 import groq from 'groq';
 
 import {
@@ -22,12 +17,6 @@ import {MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
 import {getHeroPlaceholder} from '~/lib/placeholders';
 import {seoPayload} from '~/lib/seo.server';
 import {routeHeaders} from '~/data/cache';
-import {getImageLoadingPriority} from '~/lib/const';
-import {
-  getHomeImageHotspot,
-  getHomeProductsHotspot,
-} from '../queries/strapi/homeContent';
-import {API_URL} from '~/lib/strapi';
 
 export const headers = routeHeaders;
 
@@ -36,8 +25,6 @@ export const headers = routeHeaders;
  */
 export async function loader({params, request, context}) {
   const {language, country} = context.storefront.i18n;
-  const variables = getPaginationVariables(request, {pageBy: 8});
-  const {session} = context;
 
   if (
     params.locale &&
@@ -62,32 +49,6 @@ export async function loader({params, request, context}) {
       },
     },
   );
-
-  const strapiHomeHotspot = await getHomeProductsHotspot();
-  let queryString = '';
-  if (strapiHomeHotspot) {
-    const productHandles = strapiHomeHotspot.data.home.data.attributes.modules
-      .filter((module) => module.hotspotOption)
-      .flatMap((module) =>
-        module.hotspotOption.map(
-          (option) => option.product.data.attributes.handle,
-        ),
-      );
-
-    queryString = productHandles
-      .map((handle) => `(handle:${handle})`)
-      .join(' OR ');
-    session.set('productHandles', queryString);
-  }
-
-  const {search} = await context.storefront.query(HOTSPOT_PRODUCTS_QUERY, {
-    variables: {
-      query: session.get('productHandles'),
-      ...variables,
-      country,
-      language,
-    },
-  });
 
   const seo = seoPayload.home();
 
@@ -134,8 +95,6 @@ export async function loader({params, request, context}) {
       pageType: AnalyticsPageType.home,
     },
     freeStyleCollections: collection,
-    strapiHomeHotspot: strapiHomeHotspot.data,
-    hotspotProducts: search.edges,
     seo,
   });
 }
@@ -150,17 +109,7 @@ export default function Homepage() {
     featuredProducts,
     freeStyleCollections,
     accessories,
-    strapiHomeHotspot,
-    hotspotProducts,
   } = useLoaderData();
-
-  const homeHotspotData = strapiHomeHotspot.home.data;
-  const imageHotspot = homeHotspotData.attributes.modules.find(
-    (module) => module.image,
-  );
-  const hotspotOptions = homeHotspotData.attributes.modules.find(
-    (module) => module.hotspotOption,
-  );
 
   // TODO: skeletons vs placeholders
   const skeletons = getHeroPlaceholder([{}, {}, {}]);
@@ -170,49 +119,6 @@ export default function Homepage() {
       {primaryHero && (
         <Hero {...primaryHero} height="full" top loading="eager" />
       )}
-
-      <section className="min-h-[140px] lg:min-h-[400px]">
-        <div className="inline-block w-full">
-          <div className="mx-auto px-12 mb-12 md:mb-20">
-            <div className="relative">
-              {imageHotspot && (
-                <Image
-                  data={{
-                    url: `${API_URL}${imageHotspot.image.data.attributes.url}`,
-                    altText: null,
-                  }}
-                  sizes="(max-width: 32em) 100vw, 33vw"
-                  aspectRatio={`${imageHotspot.image.data.attributes.width}/${imageHotspot.image.data.attributes.height}`}
-                  className="object-cover w-full mb-5"
-                />
-              )}
-
-              {hotspotOptions &&
-                hotspotOptions.hotspotOption?.map((option, index) => {
-                  const hotspotProduct = hotspotProducts.find(
-                    (product) =>
-                      product.node.handle ===
-                      option.product.data.attributes.handle,
-                  );
-                  return (
-                    <div
-                      className={`absolute group left-[${option.position_left}%] top-[${option.position_top}%]`}
-                      key={option.id}
-                    >
-                      <div className="w-7 h-7 bg-white rounded-full flex items-center justify-center cursor-pointer text-black">
-                        +
-                      </div>
-
-                      {hotspotProduct && (
-                        <ProductHotspotCard product={hotspotProduct} />
-                      )}
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {featuredProducts && (
         <Suspense>

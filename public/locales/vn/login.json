@@ -1,0 +1,13 @@
+{
+  "heading": "Đăng nhập",
+  "email_placholder": "Địa chỉ email",
+  "password_placholder": "Mật khẩu",
+  "submit_button": "Đăng nhập",
+  "new_to_hydrogen": "Bạn mới sử dụng ",
+  "create_account": "Tạo một tài khoản",
+  "forgot_password": "Quên mật khẩu",
+  "email_password_validate": "Vui lòng cung cấp cả email và mật khẩu.",
+  "email_format_error": "Địa chỉ email không hợp lệ",
+  "password_empty_error": "Vui lòng nhập mật khẩu",
+  "password_limit_character_error": "Mật khẩu phải có ít nhất 8 ký tự"
+}

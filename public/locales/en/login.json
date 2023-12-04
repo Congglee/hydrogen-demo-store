@@ -1,0 +1,13 @@
+{
+  "heading": "Sign in.",
+  "email_placholder": "Email address",
+  "password_placholder": "Password",
+  "submit_button": "Sign in",
+  "new_to_hydrogen": "New to ",
+  "create_account": "Create an account",
+  "forgot_password": "Forgot password",
+  "email_password_validate": "Please provide both an email and a password.",
+  "email_format_error": "Invalid email address",
+  "password_empty_error": "Please enter a password",
+  "password_limit_character_error": "Passwords must be at least 8 characters"
+}

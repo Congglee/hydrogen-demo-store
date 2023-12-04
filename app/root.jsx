@@ -1,4 +1,5 @@
 import {defer} from '@shopify/remix-oxygen';
+import {useEffect} from 'react';
 import {
   isRouteErrorResponse,
   Links,
@@ -13,6 +14,8 @@ import {
 } from '@remix-run/react';
 import {ShopifySalesChannel, Seo, useNonce} from '@shopify/hydrogen';
 import invariant from 'tiny-invariant';
+import {useChangeLanguage} from 'remix-i18next';
+import {useTranslation} from 'react-i18next';
 
 import {Layout} from '~/components';
 
@@ -27,6 +30,7 @@ import {DEFAULT_LOCALE, parseMenu} from './lib/utils';
 import {useAnalytics} from './hooks/useAnalytics';
 import {MAIN_LINKS_QUERY} from './queries/sanity/fragments/mainLinks';
 import groq from 'groq';
+import i18next from '~/i18next.server';
 
 // This is important to avoid re-fetching root queries on sub-navigations
 /**
@@ -84,6 +88,8 @@ export async function loader({request, context}) {
 
   const seo = seoPayload.root({shop: layout.shop, url: request.url});
 
+  let locale = await i18next.getLocale(request);
+
   return defer({
     isLoggedIn: Boolean(customerAccessToken),
     layout,
@@ -95,9 +101,12 @@ export async function loader({request, context}) {
     },
     sanityProjectID: context.env.SANITY_PROJECT_ID,
     sanityDataset: context.env.SANITY_DATASET,
+    locale,
     seo,
   });
 }
+
+export let handle = {i18n: 'common'};
 
 export default function App() {
   const nonce = useNonce();
@@ -108,8 +117,14 @@ export default function App() {
 
   useAnalytics(hasUserConsent);
 
+  let remixI18nLocale = data.locale;
+
+  let {i18n} = useTranslation();
+
+  useChangeLanguage(remixI18nLocale);
+
   return (
-    <html lang={locale.language}>
+    <html lang={remixI18nLocale} dir={i18n.dir()}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />

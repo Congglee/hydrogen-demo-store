@@ -12,11 +12,11 @@ import {
   storefrontRedirect,
 } from '@shopify/hydrogen';
 
-import { HydrogenSession } from '~/lib/session.server';
+import {HydrogenSession} from '~/lib/session.server';
 
-import { createSanityClient } from 'hydrogen-sanity';
+import {createSanityClient} from 'hydrogen-sanity';
 
-import { getLocaleFromRequest } from '~/lib/utils';
+import {getLocaleFromRequest} from '~/lib/utils';
 
 /**
  * Export a fetch handler in module format.
@@ -45,7 +45,7 @@ export default {
       /**
        * Create Hydrogen's Storefront client.
        */
-      const { storefront } = createStorefrontClient({
+      const {storefront} = createStorefrontClient({
         cache,
         waitUntil,
         i18n: getLocaleFromRequest(request),
@@ -63,9 +63,9 @@ export default {
         preview:
           env.SANITY_PREVIEW_SECRET && env.SANITY_API_TOKEN
             ? {
-              session: previewSession,
-              token: env.SANITY_API_TOKEN,
-            }
+                session: previewSession,
+                token: env.SANITY_API_TOKEN,
+              }
             : undefined,
         // Pass configuration options for Sanity client
         config: {
@@ -108,14 +108,14 @@ export default {
          * If the redirect doesn't exist, then `storefrontRedirect`
          * will pass through the 404 response.
          */
-        return storefrontRedirect({ request, response, storefront });
+        return storefrontRedirect({request, response, storefront});
       }
 
       return response;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
-      return new Response('An unexpected error occurred', { status: 500 });
+      return new Response('An unexpected error occurred', {status: 500});
     }
   },
 };

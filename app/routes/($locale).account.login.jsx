@@ -1,12 +1,16 @@
-import {json, redirect} from '@shopify/remix-oxygen';
+import {json} from '@shopify/remix-oxygen';
 import {Form, useActionData, useLoaderData} from '@remix-run/react';
+import {redirect} from '@remix-run/server-runtime';
 import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 
 import {getInputStyleClasses} from '~/lib/utils';
 import {Link} from '~/components';
+import i18n from '~/i18n';
 
 export const handle = {
   isPublic: true,
+  i18n: 'login',
 };
 
 /**
@@ -17,6 +21,14 @@ export async function loader({context, params}) {
 
   if (customerAccessToken) {
     return redirect(params.locale ? `${params.locale}/account` : '/account');
+  }
+
+  if (params.locale) {
+    const match = params.locale.match(/en-(\w+)/);
+    const extractedLanguage = match ? match[1] : null;
+    if (extractedLanguage) {
+      return redirect(`/account/login?lng=${extractedLanguage}`);
+    }
   }
 
   // TODO: Query for this?
@@ -97,10 +109,12 @@ export default function Login() {
   const [nativeEmailError, setNativeEmailError] = useState(null);
   const [nativePasswordError, setNativePasswordError] = useState(null);
 
+  const {t} = useTranslation('login');
+
   return (
     <div className="flex justify-center my-24 px-4">
       <div className="max-w-md w-full">
-        <h1 className="text-4xl">Sign in.</h1>
+        <h1 className="text-4xl">{t('heading')}</h1>
         {/* TODO: Add onSubmit to validate _before_ submission with native? */}
         <Form
           method="post"
@@ -109,7 +123,9 @@ export default function Login() {
         >
           {actionData?.formError && (
             <div className="flex items-center justify-center mb-6 bg-zinc-500">
-              <p className="m-4 text-s text-contrast">{actionData.formError}</p>
+              <p className="m-4 text-s text-contrast">
+                {t('email_password_validate')}
+              </p>
             </div>
           )}
           <div>
@@ -120,7 +136,7 @@ export default function Login() {
               type="email"
               autoComplete="email"
               required
-              placeholder="Email address"
+              placeholder={t('email_placholder')}
               aria-label="Email address"
               // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
@@ -128,7 +144,7 @@ export default function Login() {
                 setNativeEmailError(
                   event.currentTarget.value.length &&
                     !event.currentTarget.validity.valid
-                    ? 'Invalid email address'
+                    ? `${t('email_format_error')}`
                     : null,
                 );
               }}
@@ -145,7 +161,7 @@ export default function Login() {
               name="password"
               type="password"
               autoComplete="current-password"
-              placeholder="Password"
+              placeholder={t('password_placholder')}
               aria-label="Password"
               minLength={8}
               required
@@ -160,8 +176,8 @@ export default function Login() {
                 } else {
                   setNativePasswordError(
                     event.currentTarget.validity.valueMissing
-                      ? 'Please enter a password'
-                      : 'Passwords must be at least 8 characters',
+                      ? `${t('password_empty_error')}`
+                      : `${t('password_limit_character_error')}`,
                   );
                 }
               }}
@@ -179,21 +195,22 @@ export default function Login() {
               type="submit"
               disabled={!!(nativePasswordError || nativeEmailError)}
             >
-              Sign in
+              {t('submit_button')}
             </button>
           </div>
           <div className="flex justify-between items-center mt-8 border-t border-gray-300">
             <p className="align-baseline text-sm mt-6">
-              New to {shopName}? &nbsp;
+              {t('new_to_hydrogen')}
+              {shopName}? &nbsp;
               <Link className="inline underline" to="/account/register">
-                Create an account
+                {t('create_account')}
               </Link>
             </p>
             <Link
               className="mt-6 inline-block align-baseline text-sm text-primary/50"
               to="/account/recover"
             >
-              Forgot password
+              {t('forgot_password')}
             </Link>
           </div>
         </Form>

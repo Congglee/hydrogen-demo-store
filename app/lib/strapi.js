@@ -1,4 +1,4 @@
-export const API_URL = "https://theme.truestorefront.com"
+export const API_URL = 'https://theme.truestorefront.com';
 
 export default async function StrapiClient(query, variables) {
   const URL = `${API_URL}/graphql`;
