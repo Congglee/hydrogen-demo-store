@@ -1,4 +1,10 @@
-import {Link, useFetcher, useLocation} from '@remix-run/react';
+import {
+  Form,
+  Link,
+  useFetcher,
+  useLocation,
+  useNavigate,
+} from '@remix-run/react';
 import {useCallback, useEffect, useRef} from 'react';
 import {useInView} from 'react-intersection-observer';
 import clsx from 'clsx';
@@ -226,6 +232,7 @@ function TranslateCountry({
     <Link
       key={countryLocale.country}
       to={countryUrlPath}
+      reloadDocument
       buyerIdentity={{
         countryCode: countryLocale.country,
       }}

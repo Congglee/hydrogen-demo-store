@@ -16,7 +16,7 @@ export const handle = {
 /**
  * @param {LoaderFunctionArgs}
  */
-export async function loader({context, params}) {
+export async function loader({context, params, request}) {
   const customerAccessToken = await context.session.get('customerAccessToken');
 
   if (customerAccessToken) {
