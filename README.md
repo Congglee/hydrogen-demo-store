@@ -2,8 +2,9 @@
 
 ## Demo Result
 
-![Result Image 01](./public/result-images/result-image-7_1.png)
-![Result Image 01](./public/result-images/result-image-7_2.png)
+![Result Image 08](./public/result-images/result-image-8.png)
+![Result Image 08_2](./public/result-images/result-image-8_2.png)
+![Result Image 08_3](./public/result-images/result-image-8_3.png)
 
 ## Getting started
 
