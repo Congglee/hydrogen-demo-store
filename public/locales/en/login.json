@@ -1,7 +1,7 @@
 {
   "heading": "Sign in.",
-  "email_placholder": "Email address",
-  "password_placholder": "Password",
+  "email_placeholder": "Email address",
+  "password_placeholder": "Password",
   "submit_button": "Sign in",
   "new_to_hydrogen": "New to ",
   "create_account": "Create an account",

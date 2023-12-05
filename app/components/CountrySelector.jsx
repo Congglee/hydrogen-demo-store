@@ -1,10 +1,4 @@
-import {
-  Form,
-  Link,
-  useFetcher,
-  useLocation,
-  useNavigate,
-} from '@remix-run/react';
+import {Link, useFetcher, useLocation} from '@remix-run/react';
 import {useCallback, useEffect, useRef} from 'react';
 import {useInView} from 'react-intersection-observer';
 import clsx from 'clsx';
@@ -161,11 +155,11 @@ export function TranslateCountrySelector() {
                   countryLocale.language === selectedLocale.language &&
                   countryLocale.country === selectedLocale.country;
 
-                const countryUrlPath = getCountryUrlPath({
+                const countryUrlPath = `${getCountryUrlPath({
                   countryLocale,
                   defaultLocalePrefix,
                   pathWithoutLocale,
-                });
+                })}?lng=${countryLocale.country.toLowerCase()}`;
 
                 return (
                   <TranslateCountry
@@ -228,14 +222,25 @@ function TranslateCountry({
   countryUrlPath,
   isSelected,
 }) {
+  const location = useLocation();
+  const {search} = location;
+  const isLngAlreadyPresent = search.includes('?lng=');
+
+  const finalUrl = !isLngAlreadyPresent
+    ? countryUrlPath
+    : countryUrlPath.replace(
+        /\?lng=[^&]+/,
+        `?lng=${countryLocale.country.toLowerCase()}`,
+      );
+
   return (
     <Link
       key={countryLocale.country}
-      to={countryUrlPath}
+      to={finalUrl}
       reloadDocument
-      buyerIdentity={{
-        countryCode: countryLocale.country,
-      }}
+      // buyerIdentity={{
+      //   countryCode: countryLocale.country,
+      // }}
     >
       <Button
         className={clsx([

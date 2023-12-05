@@ -1,8 +1,15 @@
-import {useParams, Form, Await, useMatches} from '@remix-run/react';
+import {
+  useParams,
+  Form,
+  Await,
+  useMatches,
+  useLocation,
+} from '@remix-run/react';
 import {useWindowScroll} from 'react-use';
 import {Disclosure} from '@headlessui/react';
 import {Suspense, useEffect, useMemo, useState} from 'react';
 import {CartForm, Image} from '@shopify/hydrogen';
+import clsx from 'clsx';
 
 import {
   Drawer,
@@ -93,9 +100,7 @@ function Header({title, menu, topMenu, accessories}) {
       )}
       <DesktopTopHeader
         isHome={isHome}
-        title={title}
         menu={topMenu}
-        openCart={openCart}
         accessories={accessories}
       />
       <DesktopHeader
@@ -265,7 +270,11 @@ function MobileHeader({title, isHome, openCart, openMenu}) {
 
 function DesktopHeader({isHome, menu, openCart, title}) {
   const params = useParams();
+  const location = useLocation();
   const {y} = useWindowScroll();
+
+  const {search} = location;
+  const isLngAlreadyPresent = search.includes('?lng=');
 
   return (
     <header
@@ -279,7 +288,11 @@ function DesktopHeader({isHome, menu, openCart, title}) {
       } hidden h-nav lg:flex items-center sticky transition duration-300 backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-8 px-12 py-8`}
     >
       <div className="flex gap-12">
-        <Link className="font-bold" to="/" prefetch="intent">
+        <Link
+          className="font-bold"
+          to={isLngAlreadyPresent ? `/${search}` : '/'}
+          prefetch="intent"
+        >
           {title}
         </Link>
         <nav className="flex gap-8">
@@ -287,7 +300,7 @@ function DesktopHeader({isHome, menu, openCart, title}) {
           {(menu?.items || []).map((item) => (
             <Link
               key={item.id}
-              to={item.to}
+              to={isLngAlreadyPresent ? `${item.to}${search}` : item.to}
               target={item.target}
               prefetch="intent"
               className={({isActive}) =>
@@ -330,18 +343,19 @@ function DesktopHeader({isHome, menu, openCart, title}) {
   );
 }
 
-function DesktopTopHeader({isHome, menu, openCart, title, accessories}) {
+function DesktopTopHeader({isHome, menu, accessories}) {
   const {y} = useWindowScroll();
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   return (
     <header
       role="banner"
-      className={`${
-        isHome ? 'bg-[#0f172a] text-white' : 'bg-contrast/80 text-primary'
-      } ${
-        !isHome && y > 50 && 'shadow-lightHeader'
-      } transition duration-300 backdrop-blur-lg z-50 w-full leading-none`}
+      className={clsx(
+        isHome && 'bg-[#0f172a] text-white',
+        !isHome && y > 50 && 'shadow-lightHeader',
+        'bg-contrast/80 text-primary',
+        'transition duration-300 backdrop-blur-lg z-50 w-full leading-none',
+      )}
     >
       <div className="w-full px-12 lg:flex items-center justify-between gap-8 relative">
         <nav className="flex gap-8">
@@ -470,15 +484,23 @@ function AccessoriesMenu({accessories, isHoverMenu}) {
  * @param {{className?: string}}
  */
 function AccountLink({className}) {
+  const location = useLocation();
   const rootData = useRootLoaderData();
   const isLoggedIn = rootData?.isLoggedIn;
+
+  const {search} = location;
+  const isLngAlreadyPresent = search.includes('?lng=');
+
+  const finalUrl = !isLngAlreadyPresent
+    ? `/account/login`
+    : `/account/login${search}`;
 
   return isLoggedIn ? (
     <Link to="/account" className={className}>
       <IconAccount />
     </Link>
   ) : (
-    <Link to="/account/login" className={className}>
+    <Link to={finalUrl} className={className}>
       <IconLogin />
     </Link>
   );
@@ -573,10 +595,10 @@ function Footer({menu}) {
         bg-primary dark:bg-contrast dark:text-primary text-contrast overflow-hidden`}
     >
       <FooterMenu menu={menu} />
-      <div className="flex flex-col gap-y-16">
+      {/* <div className="flex flex-col gap-y-16">
         <CountrySelector />
-        <TranslateCountrySelector />
-      </div>
+      </div> */}
+      <TranslateCountrySelector />
       <div
         className={`self-end pt-8 opacity-50 md:col-span-2 lg:col-span-${itemsCount}`}
       >

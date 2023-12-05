@@ -54,11 +54,11 @@ export default async function handleRequest(
 
   const body = await renderToReadableStream(
     // Wrap the entire app in the nonce provider
-    <I18nextProvider i18n={instance}>
-      <NonceProvider>
+    <NonceProvider>
+      <I18nextProvider i18n={instance}>
         <RemixServer context={remixContext} url={request.url} />
-      </NonceProvider>
-    </I18nextProvider>,
+      </I18nextProvider>
+    </NonceProvider>,
     {
       // Pass the nonce to react
       nonce,

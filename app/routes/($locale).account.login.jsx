@@ -6,7 +6,6 @@ import {useTranslation} from 'react-i18next';
 
 import {getInputStyleClasses} from '~/lib/utils';
 import {Link} from '~/components';
-import i18n from '~/i18n';
 
 export const handle = {
   isPublic: true,
@@ -16,20 +15,21 @@ export const handle = {
 /**
  * @param {LoaderFunctionArgs}
  */
-export async function loader({context, params, request}) {
+export async function loader({context, params}) {
   const customerAccessToken = await context.session.get('customerAccessToken');
 
   if (customerAccessToken) {
     return redirect(params.locale ? `${params.locale}/account` : '/account');
   }
 
-  if (params.locale) {
-    const match = params.locale.match(/en-(\w+)/);
-    const extractedLanguage = match ? match[1] : null;
-    if (extractedLanguage) {
-      return redirect(`/account/login?lng=${extractedLanguage}`);
-    }
-  }
+  // if (params.locale) {
+  //   const match = params.locale.match(/en-(\w+)/);
+  //   const extractedLanguage = match ? match[1] : null;
+  //   console.log(match);
+  //   if (extractedLanguage) {
+  //     return redirect(`/account/login?lng=${extractedLanguage}`);
+  //   }
+  // }
 
   // TODO: Query for this?
   return json({shopName: 'Hydrogen'});
@@ -136,10 +136,8 @@ export default function Login() {
               type="email"
               autoComplete="email"
               required
-              placeholder={t('email_placholder')}
+              placeholder={t('email_placeholder')}
               aria-label="Email address"
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
               onBlur={(event) => {
                 setNativeEmailError(
                   event.currentTarget.value.length &&
@@ -161,12 +159,10 @@ export default function Login() {
               name="password"
               type="password"
               autoComplete="current-password"
-              placeholder={t('password_placholder')}
+              placeholder={t('password_placeholder')}
               aria-label="Password"
               minLength={8}
               required
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
               onBlur={(event) => {
                 if (
                   event.currentTarget.validity.valid ||

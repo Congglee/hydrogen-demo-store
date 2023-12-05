@@ -1,11 +1,12 @@
+import clsx from 'clsx';
 import {Link} from '@remix-run/react';
-import {Image} from '@shopify/hydrogen';
+import {Money, Image, useMoney} from '@shopify/hydrogen';
 
 export function ProductHotspotCard({product}) {
   return (
     <div className="absolute z-20 w-72 bg-white rounded p-4 border top-full mt-2 -translate-x-1/2 left-1/2 transition-all duration-300 ease-linear invisible opacity-0 group-hover:visible group-hover:opacity-100">
       <div className="flex flex-col gap-3 relative overflow-hidden">
-        <Link to={`/products/${product.node.handle}}`}>
+        <Link to={`/products/${product.node.handle}`}>
           <div className="aspect-square bg-primary/5">
             <div className="relative overflow-hidden w-full h-full">
               <Image
@@ -109,22 +110,40 @@ export function ProductHotspotCard({product}) {
           <div className="flex gap-x-2">
             {product.node.variants.nodes[0].compareAtPrice ? (
               <>
-                <span className="line-through font-medium text-gray-500">
-                  {`$${product.node.variants.nodes[0].compareAtPrice.amount}`}
-                </span>
-
-                <span className="text-red-600 font-bold">
-                  {`$${product.node.variants.nodes[0].price.amount}`}
-                </span>
+                <Money
+                  withoutTrailingZeros
+                  data={product.node.variants.nodes[0].price}
+                  className="text-red-600 font-bold text-left"
+                />
+                <CompareAtPrice
+                  className={'line-through font-medium text-gray-500 text-left'}
+                  data={product.node.variants.nodes[0].compareAtPrice}
+                />
               </>
             ) : (
-              <span className="text-black font-bold">
-                {`$${product.node.variants.nodes[0].price.amount}`}
-              </span>
+              <Money
+                withoutTrailingZeros
+                data={product.node.variants.nodes[0].price}
+                className="text-black font-bold"
+              />
             )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function CompareAtPrice({data, className}) {
+  const {currencyNarrowSymbol, withoutTrailingZerosAndCurrency} =
+    useMoney(data);
+
+  const styles = clsx('strike', className);
+
+  return (
+    <span className={styles}>
+      {currencyNarrowSymbol}
+      {withoutTrailingZerosAndCurrency}
+    </span>
   );
 }
